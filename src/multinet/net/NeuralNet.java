@@ -243,7 +243,7 @@ public class NeuralNet implements Serializable, Evaluable {
 
 
     public void updateWeights() {
-        if (this.updateWeightStrategy != null) {
+        if (this.updateWeightStrategy != null && isPlasticityEnabled()) {
             this.updateWeightStrategy.update(this);
         }
     }
