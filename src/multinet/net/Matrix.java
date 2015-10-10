@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
+ */
 public class Matrix implements Serializable {
 
     private final Map<Cell, Double> values;

@@ -3,6 +3,10 @@ package multinet.net;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * 
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
+ */
 public class UpdateWeightGlobal implements UpdateWeightStrategy {
 
     @Override

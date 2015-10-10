@@ -4,6 +4,10 @@ import java.util.BitSet;
 import multinet.net.genetic.Encoding;
 import multinet.net.genetic.GeneLayout32;
 
+/**
+ * 
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
+ */
 public class TestEncoding {
     public static void main(String args[]) {
         Encoding encoding = new Encoding(10, new GeneLayout32());

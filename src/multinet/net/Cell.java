@@ -2,6 +2,10 @@ package multinet.net;
 
 import java.io.Serializable;
 
+/**
+ * 
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
+ */
 public class Cell implements Serializable {
     private int x;
     private int y;

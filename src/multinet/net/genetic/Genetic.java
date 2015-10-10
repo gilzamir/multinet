@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
+/**
+ * 
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
+ */
 public abstract class Genetic {
    private Genome organism[];
    private float mutationProbability = 0.001f;

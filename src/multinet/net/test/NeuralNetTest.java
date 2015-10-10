@@ -4,6 +4,10 @@ package multinet.net.test;
 import multinet.net.NeuralNet;
 import multinet.net.NeuronType;
 
+/**
+ * 
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
+ */
 public class NeuralNetTest {
     public static void main(String args[]){
         NeuralNet net = new NeuralNet(null);

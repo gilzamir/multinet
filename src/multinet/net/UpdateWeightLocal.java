@@ -2,6 +2,10 @@ package multinet.net;
 
 import java.util.ArrayList;
 
+/**
+ * 
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
+ */
 public class UpdateWeightLocal implements UpdateWeightStrategy {
 
     @Override

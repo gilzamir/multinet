@@ -2,7 +2,10 @@ package multinet.net.genetic;
 
 import java.io.Serializable;
 
-
+/**
+ * 
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
+ */
 public abstract class Genome implements Serializable {
     
     protected Encoding chromossome[];

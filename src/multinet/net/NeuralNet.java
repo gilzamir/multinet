@@ -6,6 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 import multinet.net.genetic.Evaluable;
 
+/**
+ * Continues Time Recurrent Neural Network.
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
+ */
 public class NeuralNet implements Serializable, Evaluable {
 
     private static final long serialVersionUID = 2453110203237905144L;

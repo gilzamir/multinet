@@ -6,8 +6,8 @@ import java.util.BitSet;
 import java.util.Random;
 
 /**
- *
- * @author gilzamir
+ * 
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
  */
 public class Encoding implements Serializable {
     private BitSet code;

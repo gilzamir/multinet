@@ -1,5 +1,9 @@
 package multinet.net.genetic;
 
+/**
+ * 
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
+ */
 public class RandomicEncodingGenerator implements EncodingGenerator {
 
     @Override

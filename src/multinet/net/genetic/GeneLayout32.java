@@ -2,7 +2,10 @@ package multinet.net.genetic;
 
 import java.util.BitSet;
 
-
+/**
+ * 
+ * @author Gilzamir Gomes (gilzamir@gmail.com)
+ */
 public class GeneLayout32 implements GeneLayout {
 
     private final int GENE_SIZE = 32;
