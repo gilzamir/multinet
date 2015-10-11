@@ -22,8 +22,7 @@ public class TestEncoding {
             System.out.println(encoding.getAsFloat(i, 100, -20, 20));
             System.out.println(encoding.getAsFloat(i, -20, 20));
             System.out.println(Encoding.toInt(gene, 0, 7));
-            System.out.println("-----------------------");
-            
+            System.out.println("-----------------------");     
         }
         
     }
