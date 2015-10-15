@@ -18,22 +18,18 @@ public class UpdateWeightLocal implements UpdateWeightStrategy {
                 Neuron pre = neurons.get(j);
                  if (net.isPlasticityEnabled()) {
                         double p = 0.0;
-                        double wi = net.getWeight(j, i);// .getCell(j, i);
+                        double wi = net.getWeight(j, i);
                         if (wi == 0) {
                             continue;
                         }
-                        double oj = pre.getFunction().exec(pre.getState() * 0.5);
-                        double oi = pos.getFunction().exec(pos.getState() * 0.5);
+                        double oj = pre.getFunction().exec(pre.getState()+pre.getBias());
+                        double oi = pos.getFunction().exec(pos.getState()+pos.getBias());
                         
-                        if (oi < pos.getAmp()) {
-                            p = (pos.getAmp() - oi);
-                        } else if (oi > pos.getShift()){
-                            p = (oi - pos.getShift());
-                        }
-
-                       //double wi1 =  pos.getLearningRate() * p  * net.getLearningRate()  * (net.A * oj * oi + net.B * oj + net.C * oi + net.D);
-                        double wi1 = 0.0;
-                        double zij0 = (wi+1.0)/2.0;
+                        double Hl = pos.getShift() - pos.getAmp();
+                        double Hu = pos.getShift() + pos.getAmp();
+                        
+                         double zij0 = (wi+10)/20.0;
+                         
                         if (zij0 < 0.0) {
                             zij0 = 0.0;
                         } else if (zij0 > 1.0) {
@@ -41,19 +37,33 @@ public class UpdateWeightLocal implements UpdateWeightStrategy {
                         }
                         
                         int method = pos.getLearningMethod();
+                       
+                        if (oi >= Hl && oi <= Hu) {
+                            p = 0.0f;
+                        } else if (oi < Hl){
+                            p = (Hl - oi)/Hl;
+                        } else if (oi > Hu) {
+                            p =  (Hu - oi)/(-Hu);
+                        } 
+
+                        double wi1 = 0.0;
+                        
                         if (method == 0) {
                           wi1 = pos.getLearningRate() * p * net.getLearningRate() * oj * oi;
                         } else if (method == 1) {
                           wi1 = pos.getLearningRate() * p * net.getLearningRate() * oi * (oj - zij0);
                         } else if (method == 2) {
                             wi1 = pos.getLearningRate() * p * net.getLearningRate() * oj * (oi - zij0);
-                        } 
-                        
-                        
-                        if (wi1 != 0) {
-                            ur++;
                         }
-                        net.setWeight(j, i, wi + wi1);
+                        
+                        ur += p;
+                        wi = wi + wi1;
+                        if (wi > 10.0f) {
+                            wi = 10.0f;
+                        } else if (wi < -10.0f) {
+                            wi = -10.0f;
+                        }
+                        net.setWeight(j, i, wi);                        
                     }
                 
             }
