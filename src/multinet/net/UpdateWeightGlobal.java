@@ -41,7 +41,13 @@ public class UpdateWeightGlobal implements UpdateWeightStrategy {
                         double oj = preSyn.getFunction().exec(preSyn.getState() * 0.5);
                         double oi = posSyn.getFunction().exec(posSyn.getState() * 0.5);
                         //this.weight[i][j] +=  posSyn.getFunction().exec(mi[i]*0.5) * this.getLearningRate() * (A * oj * oi + B * oj + C * oi + D);
-                        double wi1 = posSyn.getFunction().exec(mi[i] * 0.5) * net.getLearningRate() * (net.A * oj * oi + net.B * oj + net.C * oi + net.D);
+                        
+                        double A = net.getDouble("A");
+                        double B = net.getDouble("B");
+                        double C = net.getDouble("C");
+                        double D = net.getDouble("D");
+                        
+                        double wi1 = posSyn.getFunction().exec(mi[i] * 0.5) * net.getLearningRate() * (A * oj * oi + B * oj + C * oi + D);
                         double wi = net.getWeight(i, i);// .getCell(j, i);
                         net.setWeight(j, i, wi + wi1);
                        
@@ -82,4 +88,9 @@ public class UpdateWeightGlobal implements UpdateWeightStrategy {
         }
     }
 
+    @Override
+    public void init(NeuralNet net) {
+        net.createParameter("A").createParameter("B").
+                createParameter("C").createParameter("D");
+    }
 }

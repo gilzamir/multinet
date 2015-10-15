@@ -11,6 +11,7 @@ import java.util.Random;
  */
 public class Encoding implements Serializable {
     public static long MAX_INT = 4294967295l;
+    public static long MAX_INT24 = 16777215;
     
     private BitSet code;
     private GeneLayout geneLayout;

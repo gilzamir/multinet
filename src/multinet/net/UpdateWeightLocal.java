@@ -41,9 +41,9 @@ public class UpdateWeightLocal implements UpdateWeightStrategy {
                         if (oi >= Hl && oi <= Hu) {
                             p = 0.0f;
                         } else if (oi < Hl){
-                            p = (Hl - oi)/Hl;
+                            p = (Hl - oi);
                         } else if (oi > Hu) {
-                            p =  (Hu - oi)/(-Hu);
+                            p =  (Hu - oi);
                         } 
 
                         double wi1 = 0.0;
@@ -93,4 +93,7 @@ public class UpdateWeightLocal implements UpdateWeightStrategy {
         }
     }
 
+    @Override
+    public void init(NeuralNet net) {
+    }
 }

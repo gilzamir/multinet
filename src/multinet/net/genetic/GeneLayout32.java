@@ -13,9 +13,6 @@ public class GeneLayout32 implements GeneLayout {
     private GeneReader reader;
     private GeneWriter writer;
     
-    public static final int MAX_INT24 = (int)Math.pow(2, 24);
-    public static final int MAX_INT32 = Integer.MAX_VALUE;
-    
     public GeneLayout32() {
         this.reader = new GeneReader() {
             @Override
@@ -56,7 +53,7 @@ public class GeneLayout32 implements GeneLayout {
     }
     
     @Override
-    public int getMaxInteger() {
-        return MAX_INT32;
+    public long getMaxInteger() {
+        return Encoding.MAX_INT;
     }
 }

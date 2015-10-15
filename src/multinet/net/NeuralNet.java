@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import multinet.net.genetic.Evaluable;
 
 /**
@@ -27,8 +28,8 @@ public class NeuralNet implements Serializable, Evaluable {
     private NeuralNetListener listener;
     private UpdateWeightStrategy updateWeightStrategy;
     public double restInput = 0.0;
+    private Map<String, Double> parameter;
     
-    public double A = 1.0, B = 0.0, C = 0.0, D = 0.0;
     public int numberOfUpdates = 0;
  
     private float score;
@@ -36,11 +37,25 @@ public class NeuralNet implements Serializable, Evaluable {
     public NeuralNet(UpdateWeightStrategy uwStrategy) {
         this.updateWeightStrategy = uwStrategy;
         this.neurons = new ArrayList<>();
+        parameter = new HashMap<>();
         this.reset();
     }
     
+    public NeuralNet createParameter(String name) {
+        this.parameter.put(name, 0.0);
+        return this;
+    }
     
-     public void setListener(NeuralNetListener listener) {
+    public Double getDouble(String name) {
+        return this.parameter.get(name);
+    }
+    
+    public NeuralNet setDouble(String name, double v) {
+        this.parameter.put(name, v);
+        return this;
+    }
+    
+    public void setListener(NeuralNetListener listener) {
         this.listener = listener;
     }
 
@@ -215,6 +230,7 @@ public class NeuralNet implements Serializable, Evaluable {
         for (int i = 0; i < neurons.size(); i++) {
             neurons.get(i).prepare(this);
         }
+        updateWeightStrategy.init(this);
     }
 
     public double getWeight(int i, int j) {
@@ -267,7 +283,11 @@ public class NeuralNet implements Serializable, Evaluable {
         sb.append(" ] \n");
         sb.append("LearningRate [").append(this.learningRate).append("]\n");
         sb.append("SensoryPerturbation [").append(this.restInput).append(" ]\n");
-        sb.append("EQ [" + A).append(" ").append(B).append(" ").append(C).append(" ").append(D).append("]\n");
+        Set<String> parameters = parameter.keySet();
+        for(String n: parameters) {
+            sb.append(n).append(": ").append(getDouble(n)).append("; ");
+        }
+        sb.append("\n");
         sb.append("Neurons [\n");
         for (int i = 0; i < neurons.size(); i++) {
             sb.append(neurons.get(i)).append("\n");

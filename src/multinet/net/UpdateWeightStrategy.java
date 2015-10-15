@@ -8,4 +8,5 @@ import java.io.Serializable;
  */
 public interface UpdateWeightStrategy extends Serializable {
     void update(NeuralNet net);
+    void init(NeuralNet net);
 }
