@@ -10,6 +10,8 @@ import java.util.Random;
  * @author Gilzamir Gomes (gilzamir@gmail.com)
  */
 public class Encoding implements Serializable {
+    public static long MAX_INT = 4294967295l;
+    
     private BitSet code;
     private GeneLayout geneLayout;
     private int numberOfGenes;
@@ -64,18 +66,18 @@ public class Encoding implements Serializable {
         setGene(idx, gene);
     }
     
-    public int getAsInteger(int idx){
+    public long getAsInteger(int idx){
         BitSet v = getGene(idx);
         long value = 0;
         
         for (int i = 0; i < getGeneLayout().getGeneSize(); i++) {
             value += Math.pow(2, i) * (v.get(i) ? 1 : 0 );
         }
-        return (int)value;
+        return value;
     }
 
     public float getAsFloat(int idx, float min, float max) {
-        return (getAsInteger(idx)/(float)Integer.MAX_VALUE) * (max-min) + min;
+        return (getAsInteger(idx)/(float)MAX_INT) * (max-min) + min;
     }
     
     public float getAsFloat(int idx, int resolution, float min, float max) {
