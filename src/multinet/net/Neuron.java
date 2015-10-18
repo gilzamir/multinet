@@ -23,14 +23,24 @@ public class Neuron implements Serializable {
     private final double rungeKuttaStep = 0.001;
     private double gain = 1.0;
     private double amp = 2.0;
-    private double shift = -1.0;
+    private double shift = 0.0;
     private double plastiticy = 0.0;
     private boolean plasticityEnabled = true;
     private double learningRate;
     private int learningMethod;
+    private Function weighFunction;
 
     public Neuron() {
         learningRate = 0;
+        weighFunction = new Sin();
+    }
+
+    public Function getWeighFunction() {
+        return weighFunction;
+    }
+
+    public void setWeighFunction(Function weighFunction) {
+        this.weighFunction = weighFunction;
     }
 
     public void setLearningMethod(int learningMethod) {
@@ -66,12 +76,12 @@ public class Neuron implements Serializable {
         this.amp = amp;
     }
 
-    public double getShift() {
-        return shift;
-    }
-
     public void setShift(double shift) {
         this.shift = shift;
+    }
+
+    public double getShift() {
+        return shift;
     }
 
     public double getPlastiticy() {
@@ -116,7 +126,7 @@ public class Neuron implements Serializable {
 
     public double process() {
         if (type != NeuronType.INPUT) {
-            if (type == NeuronType.NORMAL || type == NeuronType.MODULATORY) {
+           // if (type == NeuronType.NORMAL || type == NeuronType.MODULATORY) {
                 //4th Order Runge-Kutta ====================================================
                 double k1, k2, k3, k4;
 
@@ -138,16 +148,16 @@ public class Neuron implements Serializable {
                 } else if (state < -100) {
                     state = -100;
                 }
-            } else {
+              /*} else {
                 double sum = 0.0;
                 int q = 0;
                 for (int i = 0; i < net.getSize(); i++) {
                     Neuron ne = net.getNeuron(i);
                     if (ne.getType() != NeuronType.MODULATORY) {
                         Function func = ne.getFunction();
-                        double w = net.getWeight(ne.getID(), getID());
+                        double w = weighFunction.exec(net.getWeight(ne.getID(), getID()));
                         if (w != 0.0) {
-                            sum += w * func.exec(ne.getState() * ne.getGain());
+                            sum += func.exec(ne.getState()) * (net.weightGain*w);
                             q++;
                         }
                     }
@@ -161,10 +171,10 @@ public class Neuron implements Serializable {
                     sum = -100;
                 }
                 setState(sum);
-            }
+            }*/
         } else {
             double sensoryStimulus = sensorValue;
-            state = sensoryStimulus;
+            state = sensoryStimulus * gain;
         }
 
         return state;
@@ -172,25 +182,19 @@ public class Neuron implements Serializable {
 
     private double computeInterneuronInput(int id) {
         int nNeurons = net.getSize();
-        float s = 0;
+        double s = 0;
 
         for (int i = 0; i < nNeurons; i++) {
             Neuron ne =  net.getNeuron(i);
             if (ne.getType() != NeuronType.MODULATORY) {
                 Function func = ne.getFunction();
-                s += func.exec((ne.getState() * ne.getGain())) * net.getWeight(i, id); //inputs of neuron id == column id
+                s += func.exec(ne.getState()) * net.weightGain 
+                        * weighFunction.exec(net.getWeight(i, id)); //inputs of neuron id == column id
             }
         }
 
-        double r = (net.restInput - (getState() - getBias()) + s) / (getTimeConstant());
-		//double r = (- getState() + s)/(getTimeConstant());
+        double r = (-(getState() - net.restInput) + s) / (getTimeConstant());
 
-		//if(brainOutputLogic == 1)
-        //if(neurons[id]->getType() == ntEfferent)
-        //r = ((-neurons[id]->state + s)/(neurons[id]->time));
-        //else
-        //#endif
-        //r = ((stimulus - neurons[id]->state + s)/(neurons[id]->time));
         return r;
     }
 
@@ -248,8 +252,7 @@ public class Neuron implements Serializable {
         sb.append("Type: ").append(this.type).append(", ");
         sb.append("TimeConstant: ").append(this.timeConstant).append(", ");
         sb.append("Bias: ").append(this.bias).append(", ");
-        sb.append("Amp: ").append(this.amp).append(", ");
-        sb.append("Shift: ").append(this.shift).append(" ");
+        sb.append("Amp: ").append(this.amp).append("");
         return sb.toString();
     }
 }

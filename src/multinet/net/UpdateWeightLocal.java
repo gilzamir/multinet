@@ -25,8 +25,8 @@ public class UpdateWeightLocal implements UpdateWeightStrategy {
                         double oj = pre.getFunction().exec(pre.getState()+pre.getBias());
                         double oi = pos.getFunction().exec(pos.getState()+pos.getBias());
                         
-                        double Hl = pos.getShift() - pos.getAmp();
-                        double Hu = pos.getShift() + pos.getAmp();
+                        double Hl = -pos.getAmp();
+                        double Hu = pos.getAmp();
                         
                          double zij0 = (wi+10)/20.0;
                          
@@ -58,11 +58,11 @@ public class UpdateWeightLocal implements UpdateWeightStrategy {
                         
                         ur += p;
                         wi = wi + wi1;
-                        if (wi > 10.0f) {
+                       /* if (wi > 10.0f) {
                             wi = 10.0f;
                         } else if (wi < -10.0f) {
                             wi = -10.0f;
-                        }
+                        }*/
                         net.setWeight(j, i, wi);                        
                     }
                 

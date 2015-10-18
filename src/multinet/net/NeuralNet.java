@@ -15,6 +15,7 @@ public class NeuralNet implements Serializable, Evaluable {
 
     private static final long serialVersionUID = 2453110203237905144L;
     protected Matrix weight;    
+    protected Matrix plasticity;
     protected ArrayList<Neuron> neurons;
     protected int inputs[];
     protected int outputs[];
@@ -27,7 +28,7 @@ public class NeuralNet implements Serializable, Evaluable {
     protected int size;
     private NeuralNetListener listener;
     private UpdateWeightStrategy updateWeightStrategy;
-    public double restInput = 0.0;
+    public double restInput = 0.0, weightGain=1.0, lambda = 0.000000001f;
     private Map<String, Double> parameter;
     
     public int numberOfUpdates = 0;
@@ -166,7 +167,8 @@ public class NeuralNet implements Serializable, Evaluable {
     }
 
     public double getOutput(int idx) {
-        return neurons.get(outputs[idx]).getState();
+        Neuron ne = neurons.get(outputs[idx]);
+        return ne.getFunction().exec(ne.getState()) * ne.getGain();
     }
 
     public Map<Integer, Double> getOutputMap() {
@@ -182,7 +184,7 @@ public class NeuralNet implements Serializable, Evaluable {
         double out[] = new double[outputs.length];
         for (int i = 0; i < outputs.length; i++) {
             Neuron ne = this.getNeuron(outputs[i]);
-            out[i] = ne.getState();
+            out[i] = ne.getFunction().exec(ne.getState()) * ne.getGain();
         }
         return out;
     }
@@ -221,10 +223,12 @@ public class NeuralNet implements Serializable, Evaluable {
         if (weight == null) {
             //this.weight = new double[size][size];
             this.weight = new Matrix();
+            this.plasticity = new Matrix();
         }
 
         if (randomize) {
-            randomizeWeight(wmin, wmax);
+            randomizeMatrix(weight, wmin, wmax);
+            setMatrix(plasticity, 0);
         }
 
         for (int i = 0; i < neurons.size(); i++) {
@@ -240,11 +244,27 @@ public class NeuralNet implements Serializable, Evaluable {
     public void setWeight(int i, int j, double value) {
         this.weight.setCell(i, j, value);
     }
+    
+    public double getPlasticity(int i, int j) {
+        return this.plasticity.getCell(i, j);
+    }
+    
+    public void setPlasticity(int i, int j, double v) {
+        this.plasticity.setCell(i,j, v);
+    }
 
-    public void randomizeWeight(double min, double max) {
+    public void randomizeMatrix(Matrix m, double min, double max) {
         for (int i = 0; i < weight.countLines(); i++) {
             for (int j = 0; j < weight.countLines(); j++) {
-                weight.setCell(i, j, Math.random() * (max-min) + min);
+                m.setCell(i, j, Math.random() * (max-min) + min);
+            }
+        }
+    }
+    
+    public void setMatrix(Matrix m, double value) {
+        for (int i = 0; i < weight.countLines(); i++) {
+            for (int j = 0; j < weight.countLines(); j++) {
+                m.setCell(i, j, value);
             }
         }
     }
