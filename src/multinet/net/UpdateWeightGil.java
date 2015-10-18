@@ -37,7 +37,6 @@ public class UpdateWeightGil implements UpdateWeightStrategy {
 
                         double wi1 = plasticity * (1.0-oj) * p * net.getLearningRate();
                        
-                        ur += p;
                         wi = wi + wi1;
 
                         net.setWeight(j, i, wi);                        
