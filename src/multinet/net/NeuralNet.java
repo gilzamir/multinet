@@ -28,7 +28,7 @@ public class NeuralNet implements Serializable, Evaluable {
     protected int size;
     private NeuralNetListener listener;
     private UpdateWeightStrategy updateWeightStrategy;
-    public double restInput = 0.0, weightGain=1.0, lambda = 0.000000001f;
+    public double restInput = 0.0, weightGain=1.0, lambda = 0.000000001f, outputGain=0.0f;
     private Map<String, Double> parameter;
     
     public int numberOfUpdates = 0;
@@ -168,7 +168,7 @@ public class NeuralNet implements Serializable, Evaluable {
 
     public double getOutput(int idx) {
         Neuron ne = neurons.get(outputs[idx]);
-        return ne.getFunction().exec(ne.getState()) * ne.getGain();
+        return ne.getFunction().exec(ne.getState()) * outputGain;
     }
 
     public Map<Integer, Double> getOutputMap() {
@@ -184,7 +184,7 @@ public class NeuralNet implements Serializable, Evaluable {
         double out[] = new double[outputs.length];
         for (int i = 0; i < outputs.length; i++) {
             Neuron ne = this.getNeuron(outputs[i]);
-            out[i] = ne.getFunction().exec(ne.getState()) * ne.getGain();
+            out[i] = ne.getFunction().exec(ne.getState()) * outputGain;
         }
         return out;
     }
@@ -303,6 +303,7 @@ public class NeuralNet implements Serializable, Evaluable {
         sb.append(" ] \n");
         sb.append("LearningRate [").append(this.learningRate).append("]\n");
         sb.append("SensoryPerturbation [").append(this.restInput).append(" ]\n");
+        sb.append("OutputGain [").append(this.outputGain).append(" ]\n");
         Set<String> parameters = parameter.keySet();
         for(String n: parameters) {
             sb.append(n).append(": ").append(getDouble(n)).append("; ");

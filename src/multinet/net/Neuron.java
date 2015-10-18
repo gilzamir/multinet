@@ -193,8 +193,11 @@ public class Neuron implements Serializable {
             }
         }
 
+        
         double r = (-(getState() - net.restInput) + s) / (getTimeConstant());
 
+        
+        
         return r;
     }
 
@@ -252,7 +255,8 @@ public class Neuron implements Serializable {
         sb.append("Type: ").append(this.type).append(", ");
         sb.append("TimeConstant: ").append(this.timeConstant).append(", ");
         sb.append("Bias: ").append(this.bias).append(", ");
-        sb.append("Amp: ").append(this.amp).append("");
+        sb.append("Amp: ").append(this.amp).append(", ");
+        sb.append("Shift: ").append(this.shift).append(" ");
         return sb.toString();
     }
 }
