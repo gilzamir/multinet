@@ -30,11 +30,38 @@ public class Neuron implements Serializable {
     private int learningMethod;
     private Function weighFunction;
 
+    private double outputThreshold;
+    public ThresholdType thresholdRule; 
+    
     public Neuron() {
         learningRate = 0;
         weighFunction = new Sin();
     }
 
+    public void setOutputThreshold(double outputThreshold) {
+        this.outputThreshold = outputThreshold;
+    }
+
+    public void setThresholdRule(ThresholdType thresholdRule) {
+        this.thresholdRule = thresholdRule;
+    }
+
+    public double getOutputThreshold() {
+        return outputThreshold;
+    }
+
+    public ThresholdType getThresholdRule() {
+        return thresholdRule;
+    }
+    
+    public boolean checkOutputThreshold(double v) {
+        if (thresholdRule == ThresholdType.MAX) {
+            return (v > outputThreshold);
+        } else {
+            return (v < outputThreshold);
+        }
+    }
+    
     public Function getWeighFunction() {
         return weighFunction;
     }
@@ -256,7 +283,8 @@ public class Neuron implements Serializable {
         sb.append("TimeConstant: ").append(this.timeConstant).append(", ");
         sb.append("Bias: ").append(this.bias).append(", ");
         sb.append("Amp: ").append(this.amp).append(", ");
-        sb.append("Shift: ").append(this.shift).append(" ");
+        sb.append("Shift: ").append(this.shift).append(" : ");
+        sb.append("INT[").append(shift-amp).append(", ").append(shift+amp).append("] ");
         return sb.toString();
     }
 }

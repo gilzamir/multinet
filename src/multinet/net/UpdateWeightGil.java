@@ -1,5 +1,6 @@
 package multinet.net;
 
+
 import java.util.ArrayList;
 
 /**
@@ -8,44 +9,53 @@ import java.util.ArrayList;
  */
 public class UpdateWeightGil implements UpdateWeightStrategy {
 
+    public final static int OUTPUTS = 3;
+    
     @Override
     public void update(final NeuralNet net) {
+        if (!net.plasticityEnabled) {
+            return;
+        }
         ArrayList<Neuron> neurons = net.getNeurons();
         int ur = 0;
         for (int i = 0; i < net.getSize(); i++) {
             Neuron pos = neurons.get(i);
-            double oi = pos.getFunction().exec(pos.getState());
+            double oi = pos.getFunction().exec(pos.getState()) * pos.getGain();
+            
+            
             double Hl = pos.getShift() - pos.getAmp();
             double Hu = pos.getShift() + pos.getAmp();
+          
+
+            double alfa = pos.getShift();
+
             double p;                     
-            if (oi > Hl && oi < Hu) {
+            if (oi >= Hl && oi <= Hu) {
                 ur++;
                 p = 0;
             } else {
-                p = 1.0f - oi/net.lambda;
+                p = 1.0 - oi/alfa;
             }
+           
             for (int j = 0; j < net.getSize(); j++) {
-                 Neuron pre = neurons.get(j);
-                 if (net.isPlasticityEnabled()) {
-                        double wi = net.getWeight(j, i);
-                        if (wi == 0) {
-                            continue;
-                        }
-                        double oj = pre.getFunction().exec(pre.getState());
-                        
-                        double plasticity = net.getPlasticity(j, i);
+                Neuron pre = neurons.get(j);
+                double wi = net.getWeight(j, i);
+                if (wi == 0) {
+                    continue;
+                }
+                double oj = pre.getFunction().exec(pre.getState()) * pre.getGain();
 
-                        double wi1 = plasticity * (1.0-oj) * p * net.getLearningRate();
-                       
-                        wi = wi + wi1;
+                double plasticity = net.getPlasticity(j, i);
 
-                        net.setWeight(j, i, wi);                        
-                    }
-                
+                double wi1 = plasticity * (1.0-oj) * p;
+        
+                wi = wi + wi1;
+
+                net.setWeight(j, i, wi);                                        
             }
         }
         net.numberOfUpdates = ur;
-        final double rate = ur/(double)(net.getSize()*net.getSize());
+        final double rate = ur/(double)(net.getSize());
         NeuralNetEvent ev = new NeuralNetEvent() {
             @Override
             public String getMessage() {
@@ -70,5 +80,5 @@ public class UpdateWeightGil implements UpdateWeightStrategy {
 
     @Override
     public void init(NeuralNet net) {
-    }
+    } 
 }
