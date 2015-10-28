@@ -31,7 +31,7 @@ public class NeuralNet implements Serializable, Evaluable {
     public double restInput = 0.0, weightGain=1.0, lambda = 0.000000001f, outputGain=0.0f;
     private Map<String, Double> parameter;
     
-    public int numberOfUpdates = 0;
+    public double numberOfUpdates = 0;
  
     private float score;
     

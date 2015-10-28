@@ -283,8 +283,8 @@ public class Neuron implements Serializable {
         sb.append("TimeConstant: ").append(this.timeConstant).append(", ");
         sb.append("Bias: ").append(this.bias).append(", ");
         sb.append("Amp: ").append(this.amp).append(", ");
-        sb.append("Shift: ").append(this.shift).append(" : ");
-        sb.append("INT[").append(shift-amp).append(", ").append(shift+amp).append("] ");
+        sb.append("Shift: ").append(this.shift).append(", ");
+        sb.append("Method: ").append(this.learningMethod).append("\n");
         return sb.toString();
     }
 }
