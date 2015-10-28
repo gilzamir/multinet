@@ -18,15 +18,14 @@ public class UpdateWeightGil implements UpdateWeightStrategy {
         }
         ArrayList<Neuron> neurons = net.getNeurons();
         int ur = 0;
+        
         for (int i = 0; i < net.getSize(); i++) {
             Neuron pos = neurons.get(i);
-            double oi = pos.getFunction().exec(pos.getState()) * pos.getGain();
-            
-            
+            double oi = pos.getFunction().exec(pos.getState()) * net.outputGain;
+ 
             double Hl = pos.getShift() - pos.getAmp();
             double Hu = pos.getShift() + pos.getAmp();
           
-
             double alfa = pos.getShift();
 
             double p;                     
@@ -43,7 +42,7 @@ public class UpdateWeightGil implements UpdateWeightStrategy {
                 if (wi == 0) {
                     continue;
                 }
-                double oj = pre.getFunction().exec(pre.getState()) * pre.getGain();
+                double oj = pre.getFunction().exec(pre.getState()) * net.outputGain;
 
                 double plasticity = net.getPlasticity(j, i);
 
