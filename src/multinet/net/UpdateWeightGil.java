@@ -21,12 +21,22 @@ public class UpdateWeightGil implements UpdateWeightStrategy {
         final double maxEnergy = 25000;
         double energy = net.lambda;
         net.numberOfUpdates = 0.0;
+        double rho = energy/maxEnergy;
+        
         for (int i = 0; i < net.getSize(); i++) {
             Neuron pos = neurons.get(i);
             double oi = pos.getFunction().exec(pos.getState()) * net.outputGain;
  
-            double p = 1.0f - (pos.getAmp() * energy + pos.getShift())/maxEnergy;
+            double h = pos.getShift() + pos.getAmp();
+            double l = pos.getShift() - pos.getAmp();
+            double m = pos.getShift();
+            double p = 0.0;
             
+           
+            if (p > h || p < l || rho < 0.9) {
+                p = (m - oi) * Math.exp(1-rho);
+            }
+
             for (int j = 0; j < net.getSize(); j++) {
                 Neuron pre = neurons.get(j);
                 double wi = net.getWeight(j, i);
@@ -34,28 +44,20 @@ public class UpdateWeightGil implements UpdateWeightStrategy {
                 if (wi == 0) {
                     p = 0;
                 }
-                
-                double zij0 = (wi+100)/200.0; 
-                           
-                if (zij0 < 0.0) { 
-                    zij0 = 0.0; 
-                } else if (zij0 > 1.0) { 
-                    zij0 = 1.0; 
-                } 
+   
 
                 double oj = pre.getFunction().exec(pre.getState()) * net.outputGain;
 
                 double plasticity = net.getPlasticity(j, i);
-
-                
+    
                 double wi1 = 0;
                 
                 if (pos.getLearningMethod() == 0) {
-                    wi1 = plasticity * oj * p * oi;
+                    wi1 = plasticity * oj * p;
                 } else if (pos.getLearningMethod() == 1) {
-                    wi1 = plasticity * p * oj * (oi - zij0);
+                    wi1 = plasticity * oj * (-p);
                 } else if (pos.getLearningMethod() == 2) {
-                    wi1 = plasticity * p * (oj - zij0) * oi;
+                    wi1 = plasticity * p;
                 }
                 
                 net.numberOfUpdates += Math.abs(wi1);

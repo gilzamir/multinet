@@ -215,8 +215,8 @@ public class Neuron implements Serializable {
             Neuron ne =  net.getNeuron(i);
             if (ne.getType() != NeuronType.MODULATORY) {
                 Function func = ne.getFunction();
-                s += func.exec(ne.getState()) * net.weightGain 
-                        * weighFunction.exec(net.getWeight(i, id)); //inputs of neuron id == column id
+                s += func.exec(ne.getState()) 
+                        * net.getWeight(i, id); //inputs of neuron id == column id
             }
         }
 
@@ -284,7 +284,8 @@ public class Neuron implements Serializable {
         sb.append("Bias: ").append(this.bias).append(", ");
         sb.append("Amp: ").append(this.amp).append(", ");
         sb.append("Shift: ").append(this.shift).append(", ");
-        sb.append("Method: ").append(this.learningMethod).append("\n");
+        sb.append("INT: [").append(shift-amp).append(", ").append(shift+amp).append("], ");
+        sb.append("Method: ").append(this.learningMethod).append("");
         return sb.toString();
     }
 }
