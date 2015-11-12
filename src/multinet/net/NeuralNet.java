@@ -16,6 +16,8 @@ public class NeuralNet implements Serializable, Evaluable {
     private static final long serialVersionUID = 2453110203237905144L;
     protected Matrix weight;    
     protected Matrix plasticity;
+    protected Matrix amp;
+    protected Matrix shift;
     protected ArrayList<Neuron> neurons;
     protected int inputs[];
     protected int outputs[];
@@ -28,8 +30,9 @@ public class NeuralNet implements Serializable, Evaluable {
     protected int size;
     private NeuralNetListener listener;
     private UpdateWeightStrategy updateWeightStrategy;
-    public double restInput = 0.0, weightGain=1.0, lambda = 0.000000001f, outputGain=0.0f;
+    public double inputRest = 0.0, weightGain=1.0, dopamine = 0.9f, outputGain=0.0f;
     private Map<String, Double> parameter;
+    
     
     public double numberOfUpdates = 0;
  
@@ -197,6 +200,14 @@ public class NeuralNet implements Serializable, Evaluable {
     public void prepare(double min, double max) {
         prepare(true, min, max);
     }
+
+    public Matrix getWeight() {
+        return weight;
+    }
+
+    public Matrix getPlasticity() {
+        return plasticity;
+    }
     
     private void prepare(boolean randomize, double wmin, double wmax) {
         inputs = new int[this.inputSize];
@@ -224,16 +235,26 @@ public class NeuralNet implements Serializable, Evaluable {
             //this.weight = new double[size][size];
             this.weight = new Matrix();
             this.plasticity = new Matrix();
+            this.amp = new Matrix();
+            this.shift = new Matrix();
         }
-
+        
+        weight.setMax(size);
+        plasticity.setMax(size);
+        amp.setMax(size);
+        shift.setMax(size);
+        
         if (randomize) {
             randomizeMatrix(weight, wmin, wmax);
             setMatrix(plasticity, 0);
+            setMatrix(amp, 0);
+            setMatrix(shift, 0);
         }
 
         for (int i = 0; i < neurons.size(); i++) {
             neurons.get(i).prepare(this);
         }
+        
         updateWeightStrategy.init(this);
     }
 
@@ -253,6 +274,23 @@ public class NeuralNet implements Serializable, Evaluable {
         this.plasticity.setCell(i,j, v);
     }
 
+    
+    public double getAmp(int i, int j) {
+        return this.amp.getCell(i, j);
+    }
+    
+    public void setAmp(int i, int j, double v) {
+        this.amp.setCell(i,j, v);
+    }
+    
+    public double getShift(int i, int j) {
+        return this.shift.getCell(i, j);
+    }
+    
+    public void setShift(int i, int j, double v) {
+        this.shift.setCell(i,j, v);
+    }
+    
     public void randomizeMatrix(Matrix m, double min, double max) {
         for (int i = 0; i < weight.countLines(); i++) {
             for (int j = 0; j < weight.countLines(); j++) {
@@ -302,7 +340,7 @@ public class NeuralNet implements Serializable, Evaluable {
         }
         sb.append(" ] \n");
         sb.append("LearningRate [").append(this.learningRate).append("]\n");
-        sb.append("SensoryPerturbation [").append(this.restInput).append(" ]\n");
+        sb.append("SensoryPerturbation [").append(this.inputRest).append(" ]\n");
         sb.append("OutputGain [").append(this.outputGain).append(" ]\n");
         Set<String> parameters = parameter.keySet();
         for(String n: parameters) {

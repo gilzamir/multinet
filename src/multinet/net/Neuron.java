@@ -175,30 +175,6 @@ public class Neuron implements Serializable {
                 } else if (state < -100) {
                     state = -100;
                 }
-              /*} else {
-                double sum = 0.0;
-                int q = 0;
-                for (int i = 0; i < net.getSize(); i++) {
-                    Neuron ne = net.getNeuron(i);
-                    if (ne.getType() != NeuronType.MODULATORY) {
-                        Function func = ne.getFunction();
-                        double w = weighFunction.exec(net.getWeight(ne.getID(), getID()));
-                        if (w != 0.0) {
-                            sum += func.exec(ne.getState()) * (net.weightGain*w);
-                            q++;
-                        }
-                    }
-                }
-                if (q > 0) {
-                    sum = sum / q;
-                }
-                if (sum > 100) {
-                    sum = 100;
-                } else if (sum < -100) {
-                    sum = -100;
-                }
-                setState(sum);
-            }*/
         } else {
             double sensoryStimulus = sensorValue;
             state = sensoryStimulus * gain;
@@ -215,13 +191,17 @@ public class Neuron implements Serializable {
             Neuron ne =  net.getNeuron(i);
             if (ne.getType() != NeuronType.MODULATORY) {
                 Function func = ne.getFunction();
-                s += func.exec(ne.getState()) 
-                        * net.getWeight(i, id); //inputs of neuron id == column id
+                if (Math.random() <= net.dopamine) {
+                    
+                    s += func.exec(ne.getState()) 
+                            * net.weightGain * net.dopamine * weighFunction.exec(net.getWeight(i, id)); //inputs of neuron id == column id
+                
+                }
             }
         }
 
         
-        double r = (-(getState() - net.restInput) + s) / (getTimeConstant());
+        double r = (-(getState() - net.inputRest) + s) / (getTimeConstant());
 
         
         
@@ -263,7 +243,7 @@ public class Neuron implements Serializable {
     public void prepare(NeuralNet net) {
         this.net = net;
         if (this.function == null) {
-            this.setFunction(new Tanh());
+            this.setFunction(new Sigmoid());
         }
 
         if (getType() != NeuronType.NORMAL && getType() != NeuronType.MODULATORY) {

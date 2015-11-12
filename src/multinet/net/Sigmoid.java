@@ -13,7 +13,7 @@ public class Sigmoid implements Function, Serializable {
 	private static final long serialVersionUID = 7946857799377925833L;
 
 	public double exec(double value) {
-			return 1.0/(1 + Math.exp(-value));
+			return 1.0/(1.0 + Math.exp(-value));
 	}
 
 	@Override

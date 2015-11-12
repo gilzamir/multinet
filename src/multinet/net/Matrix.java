@@ -12,14 +12,14 @@ import java.util.Set;
 public class Matrix implements Serializable {
 
     private final Map<Cell, Double> values;
-    private int max = 0;
+    private int max = -1;
     
     public Matrix() {
         values = new HashMap<Cell, Double>();
     }
 
     public int countLines() {
-        return max+1;
+        return max;
     }
 
     public int countCells() {
@@ -28,6 +28,14 @@ public class Matrix implements Serializable {
     
     Set<Cell> getCells() {
         return values.keySet();
+    }
+
+    public void setMax(int max) {
+        this.max = max;
+    }
+
+    public int getMax() {
+        return max;
     }
 
     public void setCell(Cell cell, double value) {
@@ -50,7 +58,7 @@ public class Matrix implements Serializable {
     public double getCell(int i, int j) {
         return getCell(i, j, 0.0);
     }
-
+        
     public double getCell(int i, int j, double defaultValue) {
         return getCell(new Cell(i, j), defaultValue);
     }
