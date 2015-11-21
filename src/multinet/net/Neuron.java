@@ -1,12 +1,13 @@
 package multinet.net;
 
 import java.io.Serializable;
+import multinet.utils.AbstractComponent;
 
 /**
  * 
  * @author Gilzamir Gomes (gilzamir@gmail.com)
  */
-public class Neuron implements Serializable {
+public class Neuron extends AbstractComponent implements Serializable {
 
     /**
      *
@@ -22,8 +23,6 @@ public class Neuron implements Serializable {
     private double timeConstant = 1.0;
     private final double rungeKuttaStep = 0.001;
     private double gain = 1.0;
-    private double amp = 2.0;
-    private double shift = 0.0;
     private double plastiticy = 0.0;
     private boolean plasticityEnabled = true;
     private double learningRate;
@@ -93,22 +92,6 @@ public class Neuron implements Serializable {
 
     public boolean isPlasticityEnabled() {
         return plasticityEnabled;
-    }
-
-    public double getAmp() {
-        return amp;
-    }
-
-    public void setAmp(double amp) {
-        this.amp = amp;
-    }
-
-    public void setShift(double shift) {
-        this.shift = shift;
-    }
-
-    public double getShift() {
-        return shift;
     }
 
     public double getPlastiticy() {
@@ -262,9 +245,6 @@ public class Neuron implements Serializable {
         sb.append("Type: ").append(this.type).append(", ");
         sb.append("TimeConstant: ").append(this.timeConstant).append(", ");
         sb.append("Bias: ").append(this.bias).append(", ");
-        sb.append("Amp: ").append(this.amp).append(", ");
-        sb.append("Shift: ").append(this.shift).append(", ");
-        sb.append("INT: [").append(shift-amp).append(", ").append(shift+amp).append("], ");
         sb.append("Method: ").append(this.learningMethod).append("");
         return sb.toString();
     }

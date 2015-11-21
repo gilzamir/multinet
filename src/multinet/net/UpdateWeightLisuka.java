@@ -25,7 +25,7 @@ public class UpdateWeightLisuka implements UpdateWeightStrategy {
                         double oj = pre.getFunction().exec(pre.getState());
                         double oi = pos.getFunction().exec(pos.getState());
                         
-                        double Hl = pos.getAmp();
+                        double Hl = pos.getDouble("amp");
                         double plasticity = net.getPlasticity(j, i);
                         
                         if (oj >= Hl) {

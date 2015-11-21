@@ -18,17 +18,18 @@ public class UpdateWeightGil implements UpdateWeightStrategy {
         }
         ArrayList<Neuron> neurons = net.getNeurons();
      
-        //final double maxEnergy = 25000;
-        //double energy = net.lambda;
+
         net.numberOfUpdates = 0.0;
-       // double rho = energy/maxEnergy;
         
         for (int i = 0; i < net.getSize(); i++) {
             Neuron pos = neurons.get(i);
             double oi = pos.getFunction().exec(pos.getState()) * net.outputGain;
  
-            double h = pos.getShift() + pos.getAmp();
-            double l = pos.getShift() - pos.getAmp();
+            double shift = pos.getDouble("shift");
+            double amp = pos.getDouble("amp");
+            
+            double h = shift + amp;
+            double l = shift - amp;
             
             double p = 0.0;
             
@@ -91,5 +92,6 @@ public class UpdateWeightGil implements UpdateWeightStrategy {
 
     @Override
     public void init(NeuralNet net) {
+       
     } 
 }
