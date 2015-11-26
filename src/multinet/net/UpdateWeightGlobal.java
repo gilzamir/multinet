@@ -11,7 +11,7 @@ public class UpdateWeightGlobal implements UpdateWeightStrategy {
 
     @Override
     public void update(final NeuralNet net) {
-
+        /*
         Set<Integer> listOfUpdated = new HashSet<>();
 
         
@@ -85,7 +85,7 @@ public class UpdateWeightGlobal implements UpdateWeightStrategy {
                     return new Object[]{};
                 }
             });
-        }
+        }*/
     }
 
     @Override

@@ -1,379 +1,211 @@
 package multinet.net;
 
+import multinet.core.Cell;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import multinet.net.genetic.Evaluable;
+import multinet.core.AbstractComponent;
+import multinet.core.Synapse;
 
 /**
  * Continues Time Recurrent Neural Network.
  * @author Gilzamir Gomes (gilzamir@gmail.com)
  */
-public class NeuralNet implements Serializable, Evaluable {
+public class NeuralNet extends AbstractComponent implements Serializable, Evaluable, Net {
 
-    private static final long serialVersionUID = 2453110203237905144L;
-    protected Matrix weight;    
-    protected Matrix plasticity;
-    protected Matrix amp;
-    protected Matrix shift;
-    protected ArrayList<Neuron> neurons;
-    protected int inputs[];
-    protected int outputs[];
-    protected int normalNeurons[];
-    protected double learningRate;
-    protected boolean plasticityEnabled = true;
-    protected int inputSize = 0;
-    protected int outputSize = 0;
-    protected int numberOfNormalNeurons = 0;
-    protected int size;
-    private NeuralNetListener listener;
-    private UpdateWeightStrategy updateWeightStrategy;
-    public double inputRest = 0.0, weightGain=1.0, dopamine = 0.9f, outputGain=0.0f;
-    private Map<String, Double> parameter;
-    
-    
-    public double numberOfUpdates = 0;
- 
+    private int size;
+    private Map<Integer, Neuron> neurons;
+    private Map<Cell, Synapse> synapses;
+    private Stack<Integer> pool;
     private float score;
+    private UpdateWeightStrategy updateStrategy;
+    private NeuralNetListener listener;
     
-    public NeuralNet(UpdateWeightStrategy uwStrategy) {
-        this.updateWeightStrategy = uwStrategy;
-        this.neurons = new ArrayList<>();
-        parameter = new HashMap<>();
-        this.reset();
-    }
-    
-    public NeuralNet createParameter(String name) {
-        this.parameter.put(name, 0.0);
-        return this;
-    }
-    
-    public Double getDouble(String name) {
-        return this.parameter.get(name);
-    }
-    
-    public NeuralNet setDouble(String name, double v) {
-        this.parameter.put(name, v);
-        return this;
-    }
-    
-    public void setListener(NeuralNetListener listener) {
-        this.listener = listener;
+    public NeuralNet(UpdateWeightStrategy updateStr) {
+        super();
+        neurons = new HashMap<>();
+        synapses = new HashMap<>();
+        pool = new Stack<>();
+        this.updateStrategy = updateStr;
+        setDouble("inputrest", 0.0);
+        setDouble("weightgain", 1.0);
+        setDouble("dopamine", 1.0);
+        this.listener = new NeuralNetListener() {
+
+            @Override
+            public void handleUpdateWeight(NeuralNetEvent evt) {
+            }
+        };
     }
 
     public NeuralNetListener getListener() {
         return listener;
     }
 
-    public void setInputSize(int inputSize) {
-        this.inputSize = inputSize;
+    public void setListener(NeuralNetListener listener) {
+        this.listener = listener;
     }
 
-    public void setOutputSize(int outputSize) {
-        this.outputSize = outputSize;
+    public UpdateWeightStrategy getUpdateStrategy() {
+        return updateStrategy;
+    }
+    
+    public NeuralNet createParameter(String name) {
+        setDouble(name, 0.0);
+        return this;
     }
 
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public void setWeight(double w[][]) {
-        //this.weight = w;
-        for (int i = 0; i < w.length; i++) {
-            for (int j = 0; j < w[i].length; j++) {
-                this.weight.setCell(new Cell(i, j), w[i][j]);
-            }
-        }
-    }
-
-    public boolean isPlasticityEnabled() {
-        return plasticityEnabled;
-    }
-
-    public void setPlasticityEnabled(boolean plasticityEnabled) {
-        this.plasticityEnabled = plasticityEnabled;
-    }
-
-    final public void reset() {
-        this.neurons = new ArrayList<>();
-        inputSize = 0;
-        outputSize = 0;
-        numberOfNormalNeurons = 0;
-        size = 0;
-    }
-
-    public void setNeurons(ArrayList<Neuron> neurons) {
-        this.neurons = neurons;
-    }
-
-    public ArrayList<Neuron> getNeurons() {
+    public Map<Integer, Neuron> getNeurons() {
         return neurons;
     }
 
-    public double getLearningRate() {
-        return learningRate;
+    public Map<Cell, Synapse> getSynapses() {
+        return synapses;
     }
 
-    public void setLearningRate(double learningRate) {
-        this.learningRate = learningRate;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public int addCell(NeuronType type) {
-        Neuron ne = new Neuron();
-        ne.setType(type);
-        ne.setID(this.neurons.size());
-        neurons.add(ne);
-
-        if (type == NeuronType.INPUT) {
-            inputSize++;
-        } else if (type == NeuronType.OUTPUT) {
-            outputSize++;
-        } else if (type == NeuronType.NORMAL || type == NeuronType.MODULATORY) {
-            this.numberOfNormalNeurons++;
-        }
-
-        return ne.getID();
-    }
-
-    public void setInput(int ID, double value) {
-        this.neurons.get(ID).setInput(value);
-    }
-
-    public void setInput(double values[]) {
-        for (int i = 0; i < inputs.length; i++) {
-            this.neurons.get(inputs[i]).setSensorValue(values[i]);
-        }
-    }
-
-    public void process() {
-        for (int i = 0; i < inputs.length; i++) {
-            this.neurons.get(inputs[i]).process();
-        }
-
-        for (int i = 0; i < normalNeurons.length; i++) {
-            this.neurons.get(normalNeurons[i]).process();
-        }
-
-        for (int i = 0; i < outputs.length; i++) {
-            this.neurons.get(outputs[i]).process();
-        }
-        
-        if (isPlasticityEnabled()) {
-            updateWeights();
-        }
-    }
-
-    public double getOutput(int idx) {
-        Neuron ne = neurons.get(outputs[idx]);
-        return ne.getFunction().exec(ne.getState()) * outputGain;
-    }
-
-    public Map<Integer, Double> getOutputMap() {
-        HashMap<Integer, Double> map = new HashMap<>();
-        for (int i = 0; i < outputs.length; i++) {
-            Neuron ne = this.getNeuron(outputs[i]);
-            map.put(ne.getID(), ne.getState());
-        }
-        return map;
-    }
-
-    public double[] getOutput() {
-        double out[] = new double[outputs.length];
-        for (int i = 0; i < outputs.length; i++) {
-            Neuron ne = this.getNeuron(outputs[i]);
-            out[i] = ne.getFunction().exec(ne.getState()) * outputGain;
-        }
-        return out;
-    }
-
-    public void prepare() {
-        this.prepare(false, 0.0f, 0.0f);
-    }
-
-    
-    public void prepare(double min, double max) {
-        prepare(true, min, max);
-    }
-
-    public Matrix getWeight() {
-        return weight;
-    }
-
-    public Matrix getPlasticity() {
-        return plasticity;
-    }
-    
-    private void prepare(boolean randomize, double wmin, double wmax) {
-        inputs = new int[this.inputSize];
-        outputs = new int[this.outputSize];
-        normalNeurons = new int[this.numberOfNormalNeurons];
-
-        int inputsIdx = 0;
-        int outputsIdx = 0;
-        int normalIdx = 0;
-
-        for (int i = 0; i < neurons.size(); i++) {
-            Neuron ne = neurons.get(i);
-            if (ne.getType() == NeuronType.INPUT) {
-                inputs[inputsIdx++] = i;
-            } else if (ne.getType() == NeuronType.OUTPUT) {
-                outputs[outputsIdx++] = i;
-            } else if (ne.getType() == NeuronType.NORMAL || ne.getType() == NeuronType.MODULATORY) {
-                normalNeurons[normalIdx++] = i;
-            }
-        }
-
-        size = inputSize + numberOfNormalNeurons + outputSize;
-
-        if (weight == null) {
-            //this.weight = new double[size][size];
-            this.weight = new Matrix();
-            this.plasticity = new Matrix();
-            this.amp = new Matrix();
-            this.shift = new Matrix();
-        }
-        
-        weight.setMax(size);
-        plasticity.setMax(size);
-        amp.setMax(size);
-        shift.setMax(size);
-        
-        if (randomize) {
-            randomizeMatrix(weight, wmin, wmax);
-            setMatrix(plasticity, 0);
-            setMatrix(amp, 0);
-            setMatrix(shift, 0);
-        }
-
-        for (int i = 0; i < neurons.size(); i++) {
-            neurons.get(i).prepare(this);
-        }
-        
-        updateWeightStrategy.init(this);
-    }
-
-    public double getWeight(int i, int j) {
-        return this.weight.getCell(i, j);
-    }
-
-    public void setWeight(int i, int j, double value) {
-        this.weight.setCell(i, j, value);
-    }
-    
-    public double getPlasticity(int i, int j) {
-        return this.plasticity.getCell(i, j);
-    }
-    
-    public void setPlasticity(int i, int j, double v) {
-        this.plasticity.setCell(i,j, v);
-    }
-
-    
-    public double getAmp(int i, int j) {
-        return this.amp.getCell(i, j);
-    }
-    
-    public void setAmp(int i, int j, double v) {
-        this.amp.setCell(i,j, v);
-    }
-    
-    public double getShift(int i, int j) {
-        return this.shift.getCell(i, j);
-    }
-    
-    public void setShift(int i, int j, double v) {
-        this.shift.setCell(i,j, v);
-    }
-    
-    public void randomizeMatrix(Matrix m, double min, double max) {
-        for (int i = 0; i < weight.countLines(); i++) {
-            for (int j = 0; j < weight.countLines(); j++) {
-                m.setCell(i, j, Math.random() * (max-min) + min);
-            }
-        }
-    }
-    
-    public void setMatrix(Matrix m, double value) {
-        for (int i = 0; i < weight.countLines(); i++) {
-            for (int j = 0; j < weight.countLines(); j++) {
-                m.setCell(i, j, value);
-            }
-        }
-    }
-
-    public int getInputSize() {
-        return inputSize;
-    }
-
-    public int getOutputSize() {
-        return outputSize;
-    }
-
-    public Neuron getNeuron(int ID) {
-        return this.neurons.get(ID);
-    }
-
-
-    public void updateWeights() {
-        if (this.updateWeightStrategy != null && isPlasticityEnabled()) {
-            this.updateWeightStrategy.update(this);
-        }
-    }
-    
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Network{\n");
-        sb.append("Weight [ ");
-        for (int i = 0; i < this.size; i++) {
-            for (int j = 0; j < this.size; j++) {
-                //sb.append(this.weight[i][j]).append(" ");
-                sb.append(this.weight.getCell(i, j)).append(" ");
-            }
-            sb.append("\n");
+    public void proccess() {
+        Set<Integer> ID = neurons.keySet();
+        for (Integer id : ID) {
+           neurons.get(id).process();
         }
-        sb.append(" ] \n");
-        sb.append("LearningRate [").append(this.learningRate).append("]\n");
-        sb.append("SensoryPerturbation [").append(this.inputRest).append(" ]\n");
-        sb.append("OutputGain [").append(this.outputGain).append(" ]\n");
-        Set<String> parameters = parameter.keySet();
-        for(String n: parameters) {
-            sb.append(n).append(": ").append(getDouble(n)).append("; ");
-        }
-        sb.append("\n");
-        sb.append("Neurons [\n");
-        for (int i = 0; i < neurons.size(); i++) {
-            sb.append(neurons.get(i)).append("\n");
-        }
-        sb.append("]\n");
-        sb.append("}\n");
-        return sb.toString();
     }
 
+    @Override
+    public void update() {
+        if (updateStrategy != null) {
+            updateStrategy.update(this);
+        }
+    }
+    
+    public Synapse  createSynapse(int source, int target, double weight) {
+        if (neurons.containsKey(source) && neurons.containsKey(target)) {
+            Cell position = new Cell(source, target);
+
+            Neuron ni = neurons.get(source);
+            Neuron nj = neurons.get(target);
+            ni.getOutcomeSynapse().add(position);
+            nj.getIncomeSynapse().add(position);
+            
+            Synapse syn = new Synapse(source, target, weight);
+            synapses.put(position, syn);
+            return syn;
+        } else {
+            return null;
+        }
+    }
+    
+    public Neuron createNeuron() {
+        int id = generateID();
+        if (id >= 0) {
+            Neuron ne  = new Neuron();
+            ne.setID(id);
+            ne.setNet(this);
+            neurons.put(id, ne);
+            size++;
+            return ne;
+        }
+        return null;
+    }
+    
+    public boolean removeSynapse(Cell pos) {
+        return synapses.remove(pos) != null;
+    }
+    
+    public boolean removeNeuron(int id) {
+        Neuron ne = neurons.remove(id);
+        if (ne != null) {
+            releaseID(ne.getID());
+            size--;
+            for (Cell syncell : ne.getIncomeSynapse()) {
+                int i = syncell.getX();
+                Neuron ni = getNeuron(i);
+                if (ni != null) {
+                    ni.getOutcomeSynapse().remove(syncell);
+                }
+                removeSynapse(syncell);
+            }
+            
+            for (Cell syncell : ne.getOutcomeSynapse()) {
+                int j = syncell.getY();
+                Neuron nj = getNeuron(j);
+                if (nj != null) {
+                    nj.getIncomeSynapse().remove(syncell);
+                }
+                removeSynapse(syncell);
+            }
+            
+            return true;
+        }
+        return false;
+    }
+    
+    public void setScore(float score) {
+        this.score = score;
+    }
+    
     @Override
     public float getValue() {
         return score;
     }
 
-    public void setScore(float score) {
-        this.score = score;
+    @Override
+    public int getSize() {
+        return size;
     }
 
-    public int[] getInputs() {
-        return inputs;
+    @Override
+    public Synapse getSynapse(int source, int target) {
+        return synapses.get(new Cell(source, target));
     }
 
-    public int[] getOutputs() {
-        return outputs;
+    @Override
+    public Neuron getNeuron(int id) {
+        return neurons.get(id);
+    }
+    
+    private int nextID = 0;
+    public int generateID() {
+        if (nextID < Integer.MAX_VALUE) {
+            int id = nextID;
+            nextID++;
+            return id;
+        } else {
+            if (!pool.isEmpty()) {
+                return pool.pop();
+            } else {
+                return -1;
+            }
+        }
+    }
+    
+    public void releaseID(int id) {
+        pool.push(id);
     }
 
-    public int[] getNormalNeurons() {
-        return normalNeurons;
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Network{\n");
+        sb.append("Weight [ ");
+        double w = 0;
+        for (int i = 0; i < this.size; i++) {
+            for (int j = 0; j < this.size; j++) {
+                
+                Synapse syn = getSynapse(i, j);
+                if (syn != null) {
+                    w = syn.getIntensity();
+                } else {
+                    w = 0;
+                }
+                sb.append(w).append(" ");
+            }
+            sb.append("\n");
+        }
+        
+        return sb.toString();
     }
 }

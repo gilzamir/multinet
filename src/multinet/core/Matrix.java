@@ -1,5 +1,6 @@
-package multinet.net;
+package multinet.core;
 
+import multinet.core.Cell;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;

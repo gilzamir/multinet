@@ -1,125 +1,66 @@
 package multinet.net;
 
 import java.io.Serializable;
-import multinet.utils.AbstractComponent;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import multinet.core.AbstractComponent;
+import multinet.core.Cell;
+import multinet.core.NeuronImpl;
+import multinet.core.NumericalMethod;
+import multinet.core.NumericalProducer;
+import multinet.core.RungeKuttaMethod;
 
 /**
  * 
  * @author Gilzamir Gomes (gilzamir@gmail.com)
  */
-public class Neuron extends AbstractComponent implements Serializable {
+public class Neuron extends AbstractComponent implements Serializable, NumericalProducer {
 
     /**
      *
      */
     private static final long serialVersionUID = -2028785805051744192L;
-    private NeuralNet net;
+    private Net net;
     private int ID;
-    private Function function;
     private NeuronType type;
     private double state = 0.0;
     private double sensorValue = 0.0;
-    private double bias = 0.0;
     private double timeConstant = 1.0;
-    private final double rungeKuttaStep = 0.001;
-    private double gain = 1.0;
-    private double plastiticy = 0.0;
-    private boolean plasticityEnabled = true;
-    private double learningRate;
-    private int learningMethod;
-    private Function weighFunction;
-
-    private double outputThreshold;
-    public ThresholdType thresholdRule; 
+    private NeuronImpl implementation;
+    private NumericalMethod numericalMethod;
+    private List<Cell> incomeSynapse;
+    private List<Cell> outcomeSynapse;
     
     public Neuron() {
-        learningRate = 0;
-        weighFunction = new Sin();
+        implementation = new DefaultNeuronImpl();
+        numericalMethod = new RungeKuttaMethod();
+        incomeSynapse = new LinkedList<>();
+        outcomeSynapse = new LinkedList<>();
     }
 
-    public void setOutputThreshold(double outputThreshold) {
-        this.outputThreshold = outputThreshold;
+    public void setNet(Net net) {
+        this.net = net;
     }
 
-    public void setThresholdRule(ThresholdType thresholdRule) {
-        this.thresholdRule = thresholdRule;
+    public List<Cell> getIncomeSynapse() {
+        return incomeSynapse;
     }
 
-    public double getOutputThreshold() {
-        return outputThreshold;
+    public List<Cell> getOutcomeSynapse() {
+        return outcomeSynapse;
     }
 
-    public ThresholdType getThresholdRule() {
-        return thresholdRule;
-    }
-    
-    public boolean checkOutputThreshold(double v) {
-        if (thresholdRule == ThresholdType.MAX) {
-            return (v > outputThreshold);
-        } else {
-            return (v < outputThreshold);
-        }
-    }
-    
-    public Function getWeighFunction() {
-        return weighFunction;
+    public NeuronImpl getImplementation() {
+        return implementation;
     }
 
-    public void setWeighFunction(Function weighFunction) {
-        this.weighFunction = weighFunction;
+    public void setImplementation(NeuronImpl implementation) {
+        this.implementation = implementation;
     }
-
-    public void setLearningMethod(int learningMethod) {
-        this.learningMethod = learningMethod;
-    }
-
-    public int getLearningMethod() {
-        return learningMethod;
-    }
-    
-    
-    public double getLearningRate() {
-        return learningRate;
-    }
-
-    public void setLearningRate(double learningRate) {
-        this.learningRate = learningRate;
-    }
-
-    public void setPlasticityEnabled(boolean plasticityAcvate) {
-        this.plasticityEnabled = plasticityAcvate;
-    }
-
-    public boolean isPlasticityEnabled() {
-        return plasticityEnabled;
-    }
-
-    public double getPlastiticy() {
-        return plastiticy;
-    }
-
-    public void setPlastiticy(double plastiticy) {
-        this.plastiticy = plastiticy;
-    }
-
+   
     public double getState() {
         return state;
-    }
-
-    public void setBias(double bias) {
-        this.bias = bias;
-    }
-
-    public double getBias() {
-        return bias;
-    }
-
-    public double getGain() {
-        return gain;
-    }
-
-    public void setGain(double gain) {
-        this.gain = gain;
     }
 
     public void setTimeConstant(double timeConstant) {
@@ -136,66 +77,25 @@ public class Neuron extends AbstractComponent implements Serializable {
 
     public double process() {
         if (type != NeuronType.INPUT) {
-           // if (type == NeuronType.NORMAL || type == NeuronType.MODULATORY) {
-                //4th Order Runge-Kutta ====================================================
-                double k1, k2, k3, k4;
-
-                double pState = state;
-
-                k1 = computeInterneuronInput(this.getID());
-                state = pState + k1 * rungeKuttaStep / 2.0;
-
-                k2 = computeInterneuronInput(getID());
-                state = pState + k2 * rungeKuttaStep / 2.0;
-
-                k3 = computeInterneuronInput(getID());
-                state = pState + k3 * rungeKuttaStep;
-
-                k4 = computeInterneuronInput(getID());
-                state = pState + (k1 + 2 * k2 + 2 * k3 + k4) * rungeKuttaStep / 6.0;
-                if (state > 100) {
-                    state = 100;
-                } else if (state < -100) {
-                    state = -100;
-                }
-        } else {
-            double sensoryStimulus = sensorValue;
-            state = sensoryStimulus * gain;
+            state = numericalMethod.nextState(state, this);
         }
-
         return state;
     }
-
-    private double computeInterneuronInput(int id) {
-        int nNeurons = net.getSize();
-        double s = 0;
-
-        for (int i = 0; i < nNeurons; i++) {
-            Neuron ne =  net.getNeuron(i);
-            if (ne.getType() != NeuronType.MODULATORY) {
-                Function func = ne.getFunction();
-                if (Math.random() <= net.dopamine) {
-                    
-                    s += func.exec(ne.getState()) 
-                            * net.weightGain * net.dopamine * weighFunction.exec(net.getWeight(i, id)); //inputs of neuron id == column id
-                
-                }
-            }
-        }
-
-        
-        double r = (-(getState() - net.inputRest) + s) / (getTimeConstant());
-
-        
-        
-        return r;
+     
+    @Override
+    public double produce(double currentState) {
+        return implementation.step(this, net, currentState);
     }
 
     public void setSensorValue(double value) {
         this.sensorValue = value;
     }
 
-    public NeuralNet getNet() {
+    public double getSensorValue() {
+        return sensorValue;
+    }
+
+    public Net getNet() {
         return net;
     }
 
@@ -215,19 +115,9 @@ public class Neuron extends AbstractComponent implements Serializable {
         this.ID = ID;
     }
 
-    public void setFunction(Function f) {
-        this.function = f;
-    }
 
-    public Function getFunction() {
-        return function;
-    }
-
-    public void prepare(NeuralNet net) {
+    public void prepare(Net net) {
         this.net = net;
-        if (this.function == null) {
-            this.setFunction(new Sigmoid());
-        }
 
         if (getType() != NeuronType.NORMAL && getType() != NeuronType.MODULATORY) {
             this.timeConstant = 1.0;
@@ -235,7 +125,7 @@ public class Neuron extends AbstractComponent implements Serializable {
     }
 
     public void setInput(double value) {
-        this.setSensorValue(value);
+        implementation.setInput(this, value);
     }
 
     @Override
@@ -244,8 +134,15 @@ public class Neuron extends AbstractComponent implements Serializable {
 
         sb.append("Type: ").append(this.type).append(", ");
         sb.append("TimeConstant: ").append(this.timeConstant).append(", ");
-        sb.append("Bias: ").append(this.bias).append(", ");
-        sb.append("Method: ").append(this.learningMethod).append("");
+        
+        Set<String> keys = pDouble.keySet();
+        
+        for (String k : keys) {
+            double v = pDouble.get(k);
+            sb.append(k).append(": ").append(v).append(" ");
+        }
+        
+        
         return sb.toString();
     }
 }

@@ -10,6 +10,7 @@ public class UpdateWeightLocal implements UpdateWeightStrategy {
 
     @Override
     public void update(final NeuralNet net) {
+        /*
         ArrayList<Neuron> neurons = net.getNeurons();
         int ur = 0;
         for (int i = 0; i < net.getSize(); i++) {
@@ -58,11 +59,6 @@ public class UpdateWeightLocal implements UpdateWeightStrategy {
                         
                         ur += p;
                         wi = wi + wi1;
-                       /* if (wi > 10.0f) {
-                            wi = 10.0f;
-                        } else if (wi < -10.0f) {
-                            wi = -10.0f;
-                        }*/
                         net.setWeight(j, i, wi);                        
                     }
                 
@@ -90,7 +86,7 @@ public class UpdateWeightLocal implements UpdateWeightStrategy {
         
         if (net.getListener() != null) {
             net.getListener().handleUpdateWeight(ev);
-        }
+        }*/
     }
 
     @Override

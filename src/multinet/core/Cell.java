@@ -1,4 +1,4 @@
-package multinet.net;
+package multinet.core;
 
 import java.io.Serializable;
 

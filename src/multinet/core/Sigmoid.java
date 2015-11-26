@@ -1,5 +1,6 @@
-package multinet.net;
+package multinet.core;
 
+import multinet.core.Function;
 import java.io.Serializable;
 
 /**

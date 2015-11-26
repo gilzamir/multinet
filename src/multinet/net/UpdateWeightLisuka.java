@@ -1,7 +1,5 @@
 package multinet.net;
 
-import java.util.ArrayList;
-
 /**
  * 
  * @author Gilzamir Gomes (gilzamir@gmail.com)
@@ -10,6 +8,7 @@ public class UpdateWeightLisuka implements UpdateWeightStrategy {
 
     @Override
     public void update(final NeuralNet net) {
+        /*
         ArrayList<Neuron> neurons = net.getNeurons();
         int ur = 0;
         for (int i = 0; i < net.getSize(); i++) {
@@ -66,7 +65,7 @@ public class UpdateWeightLisuka implements UpdateWeightStrategy {
         
         if (net.getListener() != null) {
             net.getListener().handleUpdateWeight(ev);
-        }
+        }*/
     }
 
     @Override

@@ -2,6 +2,7 @@
 package multinet.net.test;
 
 import multinet.net.NeuralNet;
+import multinet.net.Neuron;
 import multinet.net.NeuronType;
 
 /**
@@ -11,20 +12,22 @@ import multinet.net.NeuronType;
 public class NeuralNetTest {
     public static void main(String args[]){
         NeuralNet net = new NeuralNet(null);
-        int i1 = net.addCell(NeuronType.INPUT);
-        int i2 = net.addCell(NeuronType.INPUT);
-        int n1 = net.addCell(NeuronType.NORMAL);
-        int o1 = net.addCell(NeuronType.OUTPUT);
+        Neuron i1 = net.createNeuron();
+        Neuron i2 = net.createNeuron();
+        Neuron n1 = net.createNeuron();
+        Neuron o1 = net.createNeuron();
         
-        net.prepare();
-       
-        net.setWeight(i1, n1, 0.5f);
-        net.setWeight(i2, n1, 0.5f);
-        net.setWeight(n1, o1, 1.0f);
+        i1.setType(NeuronType.INPUT);
+        i2.setType(NeuronType.INPUT);
         
-        net.setInput(new double[]{1.0f, 1.0f});
-        net.process();
-        System.out.println(net.getNeuron(o1).getState());
+        n1.setType(NeuronType.NORMAL);
+        o1.setType(NeuronType.OUTPUT);
         
+        net.createSynapse(i1.getID(), n1.getID(), 0.5f);
+        net.createSynapse(i2.getID(), n1.getID(), 0.5f);
+        net.createSynapse(n1.getID(), o1.getID(), 1.0f);
+        
+        net.proccess();
+        System.out.println(o1.getImplementation().getOutput(o1));
     }
 }
